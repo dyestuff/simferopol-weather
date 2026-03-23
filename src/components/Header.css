@@ -1,0 +1,77 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--tg-theme-secondary-bg-color, var(--bg-card));
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--tg-theme-text-color, var(--text-primary));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info {
+  margin-top: 2px;
+}
+
+.user-greeting {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, var(--text-muted));
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.header-btn {
+  background: var(--tg-theme-bg-color, var(--bg-primary));
+  border: 1px solid var(--border-color);
+  color: var(--tg-theme-text-color, var(--text-primary));
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.header-btn:hover {
+  background: var(--tg-theme-button-color, var(--accent-color));
+  color: var(--tg-theme-button-text-color, white);
+  border-color: var(--tg-theme-button-color, var(--accent-color));
+}
+
+.theme-btn {
+  font-size: 1.1rem;
+  padding: 8px 10px;
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px;
+  }
+
+  .header-title {
+    font-size: 1.1rem;
+  }
+
+  .header-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}

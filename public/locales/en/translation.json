@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Simferopol Weather",
+    "loading": "Loading...",
+    "error": "Error loading weather data"
+  },
+  "current": {
+    "title": "Current Weather",
+    "feelsLike": "Feels like",
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "pressure": "Pressure",
+    "uvIndex": "UV Index",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset"
+  },
+  "hourly": {
+    "title": "Hourly Forecast"
+  },
+  "daily": {
+    "title": "7-Day Forecast",
+    "high": "High",
+    "low": "Low"
+  },
+  "historical": {
+    "title": "Historical Data",
+    "days": "Last 7 days",
+    "placeholder": "Historical weather data will be shown here"
+  },
+  "alerts": {
+    "title": "Weather Alerts",
+    "extremeCold": "Extreme Cold Warning",
+    "extremeHeat": "Extreme Heat Warning",
+    "highWind": "High Wind Warning",
+    "heavyRain": "Heavy Rain Expected",
+    "noAlerts": "No active alerts"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "blue": "Blue"
+  },
+  "units": {
+    "celsius": "°C",
+    "kmh": "km/h",
+    "hPa": "hPa",
+    "percent": "%"
+  },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  }
+}
