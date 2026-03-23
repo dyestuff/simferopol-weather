@@ -6,7 +6,6 @@ import HourlyForecast from './components/HourlyForecast'
 import DailyForecast from './components/DailyForecast'
 import WeatherAlerts from './components/WeatherAlerts'
 import HistoricalData from './components/HistoricalData'
-import { getCurrentWeather, getHourlyForecast, getDailyForecast } from './services/weatherApi'
 import { useTelegram } from './hooks/useTelegram'
 
 // Mock data for fallback
@@ -42,9 +41,36 @@ const mockDaily = {
   wind_speed_10m_max: Array.from({length: 7}, () => 10 + Math.random() * 20)
 }
 
+const BASE_URL = 'https://api.open-meteo.com/v1/forecast'
+const COORDS = { latitude: 44.9375, longitude: 34.125 }
+
+function fetchWithTimeout(url, timeoutMs = 5000) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+    )
+  ])
+}
+
+async function fetchWeatherData() {
+  const params = new URLSearchParams({
+    ...COORDS,
+    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m',
+    hourly: 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,wind_speed_10m_max',
+    forecast_days: 7,
+    timezone: 'auto'
+  })
+  
+  const response = await fetchWithTimeout(`${BASE_URL}?${params}`)
+  if (!response.ok) throw new Error('Failed')
+  return response.json()
+}
+
 function App() {
   const { t } = useTranslation()
-  const { themeParams, colorScheme, isTelegram, setHeaderColor, setBackgroundColor, user } = useTelegram()
+  const { themeParams, colorScheme, isTelegram, user } = useTelegram()
   
   const [theme, setTheme] = useState(() => {
     if (isTelegram) {
@@ -53,40 +79,22 @@ function App() {
     return localStorage.getItem('theme') || 'light'
   })
   
-  const [weatherData, setWeatherData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [weatherData, setWeatherData] = useState({
+    current: { current: mockCurrent },
+    hourly: { hourly: mockHourly },
+    daily: { daily: mockDaily }
+  })
 
-  // Apply Telegram theme
   useEffect(() => {
     if (isTelegram && themeParams) {
       const root = document.documentElement
-      if (themeParams.bg_color) {
-        root.style.setProperty('--tg-theme-bg-color', themeParams.bg_color)
-        root.style.setProperty('--bg-primary', themeParams.bg_color)
-      }
-      if (themeParams.secondary_bg_color) {
-        root.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color)
-        root.style.setProperty('--bg-card', themeParams.secondary_bg_color)
-      }
-      if (themeParams.text_color) {
-        root.style.setProperty('--tg-theme-text-color', themeParams.text_color)
-        root.style.setProperty('--text-primary', themeParams.text_color)
-      }
-      if (themeParams.hint_color) {
-        root.style.setProperty('--tg-theme-hint-color', themeParams.hint_color)
-        root.style.setProperty('--text-muted', themeParams.hint_color)
-      }
-      if (themeParams.link_color) {
-        root.style.setProperty('--tg-theme-link-color', themeParams.link_color)
-        root.style.setProperty('--accent-color', themeParams.link_color)
-      }
-      if (themeParams.button_color) {
-        root.style.setProperty('--tg-theme-button-color', themeParams.button_color)
-      }
-      if (themeParams.button_text_color) {
-        root.style.setProperty('--tg-theme-button-text-color', themeParams.button_text_color)
-      }
+      if (themeParams.bg_color) root.style.setProperty('--tg-theme-bg-color', themeParams.bg_color)
+      if (themeParams.secondary_bg_color) root.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color)
+      if (themeParams.text_color) root.style.setProperty('--tg-theme-text-color', themeParams.text_color)
+      if (themeParams.hint_color) root.style.setProperty('--tg-theme-hint-color', themeParams.hint_color)
+      if (themeParams.link_color) root.style.setProperty('--tg-theme-link-color', themeParams.link_color)
+      if (themeParams.button_color) root.style.setProperty('--tg-theme-button-color', themeParams.button_color)
+      if (themeParams.button_text_color) root.style.setProperty('--tg-theme-button-text-color', themeParams.button_text_color)
     }
   }, [isTelegram, themeParams])
 
@@ -98,40 +106,15 @@ function App() {
   }, [theme, isTelegram])
 
   useEffect(() => {
-    async function fetchWeather() {
-      try {
-        setLoading(true)
-        const [current, hourly, daily] = await Promise.all([
-          getCurrentWeather(),
-          getHourlyForecast(),
-          getDailyForecast()
-        ])
-        setWeatherData({ current, hourly, daily })
-        setError(null)
-      } catch (err) {
-        console.error('Weather fetch error:', err)
-        // Use mock data as fallback
-        setWeatherData({
-          current: { current: mockCurrent },
-          hourly: { hourly: mockHourly },
-          daily: { daily: mockDaily }
-        })
-        setError(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchWeather()
-    
-    const interval = setInterval(fetchWeather, 30 * 60 * 1000)
-    return () => clearInterval(interval)
+    fetchWeatherData().then(data => {
+      setWeatherData(data)
+    }).catch(err => {
+      console.log('Using mock data:', err.message)
+    })
   }, [])
 
   const toggleTheme = () => {
-    if (isTelegram) {
-      // In Telegram, we can only switch between light/dark based on Telegram's theme
-      return
-    }
+    if (isTelegram) return
     setTheme(prev => {
       const themes = ['light', 'dark', 'blue']
       const currentIndex = themes.indexOf(prev)
@@ -139,31 +122,13 @@ function App() {
     })
   }
 
-  if (loading) {
-    return (
-      <div className="app">
-        <Header theme={theme} toggleTheme={toggleTheme} isTelegram={isTelegram} user={user} />
-        <div className="loading">{t('app.loading')}</div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="app">
-        <Header theme={theme} toggleTheme={toggleTheme} isTelegram={isTelegram} user={user} />
-        <div className="error">{t('app.error')}: {error}</div>
-      </div>
-    )
-  }
-
   return (
     <div className="app">
       <Header theme={theme} toggleTheme={toggleTheme} isTelegram={isTelegram} user={user} />
-      <WeatherAlerts current={weatherData.current.current} />
-      <CurrentWeather data={weatherData.current.current} />
-      <HourlyForecast data={weatherData.hourly.hourly} />
-      <DailyForecast data={weatherData.daily.daily} />
+      <WeatherAlerts current={weatherData.current?.current} />
+      <CurrentWeather data={weatherData.current?.current} />
+      <HourlyForecast data={weatherData.hourly?.hourly} />
+      <DailyForecast data={weatherData.daily?.daily} />
       <HistoricalData />
     </div>
   )
