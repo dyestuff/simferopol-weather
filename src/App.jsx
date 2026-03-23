@@ -8,37 +8,37 @@ import WeatherAlerts from './components/WeatherAlerts'
 import HistoricalData from './components/HistoricalData'
 import { useTelegram } from './hooks/useTelegram'
 
-// Mock data for fallback
-const mockCurrent = {
-  temperature_2m: 15,
-  relative_humidity_2m: 65,
-  apparent_temperature: 13,
-  precipitation: 0,
-  weather_code: 2,
-  cloud_cover: 40,
-  pressure_msl: 1015,
-  wind_speed_10m: 12,
-  wind_direction_10m: 180
-}
-
-const mockHourly = {
-  time: Array.from({length: 48}, (_, i) => new Date(Date.now() + i * 3600000).toISOString()),
-  temperature_2m: Array.from({length: 48}, () => 10 + Math.random() * 10),
-  precipitation_probability: Array.from({length: 48}, () => Math.floor(Math.random() * 30)),
-  weather_code: Array.from({length: 48}, () => Math.floor(Math.random() * 4)),
-  wind_speed_10m: Array.from({length: 48}, () => 5 + Math.random() * 15)
-}
-
-const mockDaily = {
-  time: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0]),
-  weather_code: Array.from({length: 7}, () => Math.floor(Math.random() * 4)),
-  temperature_2m_max: Array.from({length: 7}, () => 15 + Math.random() * 10),
-  temperature_2m_min: Array.from({length: 7}, () => 5 + Math.random() * 8),
-  sunrise: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0] + 'T06:30'),
-  sunset: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0] + 'T18:30'),
-  precipitation_sum: Array.from({length: 7}, () => Math.random() * 5),
-  precipitation_probability_max: Array.from({length: 7}, () => Math.floor(Math.random() * 50)),
-  wind_speed_10m_max: Array.from({length: 7}, () => 10 + Math.random() * 20)
+// Mock data - matches API structure
+const mockWeatherData = {
+  current: {
+    temperature_2m: 15,
+    relative_humidity_2m: 65,
+    apparent_temperature: 13,
+    precipitation: 0,
+    weather_code: 2,
+    cloud_cover: 40,
+    pressure_msl: 1015,
+    wind_speed_10m: 12,
+    wind_direction_10m: 180
+  },
+  hourly: {
+    time: Array.from({length: 48}, (_, i) => new Date(Date.now() + i * 3600000).toISOString()),
+    temperature_2m: Array.from({length: 48}, () => 10 + Math.random() * 10),
+    precipitation_probability: Array.from({length: 48}, () => Math.floor(Math.random() * 30)),
+    weather_code: Array.from({length: 48}, () => Math.floor(Math.random() * 4)),
+    wind_speed_10m: Array.from({length: 48}, () => 5 + Math.random() * 15)
+  },
+  daily: {
+    time: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0]),
+    weather_code: Array.from({length: 7}, () => Math.floor(Math.random() * 4)),
+    temperature_2m_max: Array.from({length: 7}, () => 15 + Math.random() * 10),
+    temperature_2m_min: Array.from({length: 7}, () => 5 + Math.random() * 8),
+    sunrise: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0] + 'T06:30'),
+    sunset: Array.from({length: 7}, (_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0] + 'T18:30'),
+    precipitation_sum: Array.from({length: 7}, () => Math.random() * 5),
+    precipitation_probability_max: Array.from({length: 7}, () => Math.floor(Math.random() * 50)),
+    wind_speed_10m_max: Array.from({length: 7}, () => 10 + Math.random() * 20)
+  }
 }
 
 const BASE_URL = 'https://api.open-meteo.com/v1/forecast'
@@ -79,11 +79,7 @@ function App() {
     return localStorage.getItem('theme') || 'light'
   })
   
-  const [weatherData, setWeatherData] = useState({
-    current: { current: mockCurrent },
-    hourly: { hourly: mockHourly },
-    daily: { daily: mockDaily }
-  })
+  const [weatherData, setWeatherData] = useState(mockWeatherData)
 
   useEffect(() => {
     if (isTelegram && themeParams) {
@@ -125,10 +121,10 @@ function App() {
   return (
     <div className="app">
       <Header theme={theme} toggleTheme={toggleTheme} isTelegram={isTelegram} user={user} />
-      <WeatherAlerts current={weatherData.current?.current} />
-      <CurrentWeather data={weatherData.current?.current} />
-      <HourlyForecast data={weatherData.hourly?.hourly} />
-      <DailyForecast data={weatherData.daily?.daily} />
+      <WeatherAlerts current={weatherData.current} />
+      <CurrentWeather data={weatherData.current} />
+      <HourlyForecast data={weatherData.hourly} />
+      <DailyForecast data={weatherData.daily} />
       <HistoricalData />
     </div>
   )
